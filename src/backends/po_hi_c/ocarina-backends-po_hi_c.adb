@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---    Copyright (C) 2008-2009 Telecom ParisTech, 2010-2016 ESA & ISAE.      --
+--    Copyright (C) 2008-2009 Telecom ParisTech, 2010-2018 ESA & ISAE.      --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,22 +74,11 @@ package body Ocarina.Backends.PO_HI_C is
    use Ocarina.ME_AADL;
    use Ocarina.ME_AADL.AADL_Instances.Nodes;
    use Ocarina.ME_AADL.AADL_Instances.Entities;
-   use Ocarina.Backends.PO_HI_C.Activity;
-   use Ocarina.Backends.PO_HI_C.Deployment;
-   use Ocarina.Backends.PO_HI_C.Main;
-   use Ocarina.Backends.PO_HI_C.Naming;
-   use Ocarina.Backends.PO_HI_C.Request;
-   use Ocarina.Backends.C_Common.Types;
-   use Ocarina.Backends.C_Common.Subprograms;
-   use Ocarina.Backends.PO_HI_C.Marshallers;
    use Ocarina.Backends.Messages;
-   use Ocarina.Backends.C_Tree.Generator;
-   use Ocarina.Backends.ASN1;
    use Ocarina.Backends.Utils;
    use Ocarina.Backends.Expander;
    use Ocarina.Instances;
    use Ocarina.Backends.Build_Utils;
-   use Ocarina.Backends.Execution_Utils;
    use Ocarina.Backends.Execution_Tests;
 
    package AAN renames Ocarina.ME_AADL.AADL_Instances.Nodes;
@@ -209,18 +198,6 @@ package body Ocarina.Backends.PO_HI_C is
          when Platform_Native_Compcert =>
             Write_Str ("compcert");
 
-         when Platform_NDS_RTEMS =>
-            Write_Str ("nds.rtems");
-
-         when Platform_NDS_RTEMS_POSIX =>
-            Write_Str ("nds.rtems_posix");
-
-         when Platform_Gumstix_RTEMS =>
-            Write_Str ("gumstix.rtems");
-
-         when Platform_Gumstix_RTEMS_POSIX =>
-            Write_Str ("gumstix.rtems_posix");
-
          when Platform_Bench =>
             Write_Str ("bench");
 
@@ -233,23 +210,14 @@ package body Ocarina.Backends.PO_HI_C is
          when Platform_X86_LINUXTASTE =>
             Write_Str ("x86.linuxtaste");
 
-         when Platform_X86_RTEMS =>
-            Write_Str ("x86.rtems");
-
-         when Platform_X86_RTEMS_POSIX =>
-            Write_Str ("x86.rtems_posix");
-
-         when Platform_ARM_DSLINUX =>
-            Write_Str ("arm.dslinux");
-
-         when Platform_ARM_N770 =>
-            Write_Str ("arm.n770");
-
          when Platform_LINUX64 =>
             Write_Str ("linux64");
 
          when Platform_LINUX32 =>
             Write_Str ("linux32");
+
+         when Platform_LINUX_DLL =>
+            Write_Str ("linux_dll");
 
          when Platform_WIN32 =>
             Write_Str ("win32");
@@ -265,6 +233,9 @@ package body Ocarina.Backends.PO_HI_C is
 
          when Platform_LINUX32_XENOMAI_POSIX =>
             Write_Str ("linux32-xenomai-posix");
+
+         when Platform_AIR =>
+            Write_Str ("air");
 
          when others =>
             Display_Error
@@ -358,7 +329,6 @@ package body Ocarina.Backends.PO_HI_C is
    ------------------------------------
 
    procedure Generate_Doxygen_Configuration (My_System : Node_Id) is
-      use Ocarina.Backends.C_Tree.Nodes;
       procedure Visit_Architecture_Instance (E : Node_Id);
       procedure Visit_Component_Instance (E : Node_Id);
       procedure Visit_System_Instance (E : Node_Id);

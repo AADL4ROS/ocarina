@@ -130,6 +130,7 @@ module Ocarina::ME_AADL_BA::BA_Tree::Nodes {
     Node_Id  Component_Impl;
 
     Node_Id  Full_Identifier;  // ex: package::comp_type.comp_impl
+    Node_Id  Corresponding_Declaration;  // AADL Declarative tree node
   };
 
   interface Behavior_Variable : Behavior_Entity {
@@ -340,7 +341,13 @@ module Ocarina::ME_AADL_BA::BA_Tree::Nodes {
     Node_Id  Behavior_Action;
     List_Id  Behavior_Action_Sequence;
     List_Id  Behavior_Action_Set;
+    List_Id  Scope_BA_Entities;  // this attribute is used to enable analysis
+			       // of the element in For/Forall construct
+			       // that acts as local variable with the scope
+			       // of the For/Forall construct
  };
+
+ interface BA_Entity_List : List_Id {};
 
   //  behavior_action ::= 
   //    basic_action
@@ -368,7 +375,7 @@ module Ocarina::ME_AADL_BA::BA_Tree::Nodes {
 
   interface If_Cond_Struct : Behavior_Entity {
     Node_Id  If_Statement;    //  node kind is Conditional_Statement
-    Node_Id  Elsif_Statement;  //  i.e
+    List_Id  Elsif_Statement;  //  i.e
     Node_Id  Else_Statement;  //  i.e
   };
 
@@ -454,7 +461,7 @@ module Ocarina::ME_AADL_BA::BA_Tree::Nodes {
     Node_Id  Identifier;
     List_Id  Subprogram_Parameter_List;
     Node_Id  Target;
-
+    boolean  Is_Subprogram_Call;
     octet    Comm_Kind; // ! , ? , >> , !< , !>
   };
 
@@ -478,6 +485,8 @@ module Ocarina::ME_AADL_BA::BA_Tree::Nodes {
 
   interface Parameter_Label : Behavior_Entity {
     Node_Id  Parameter;
+    boolean  Is_In;
+    boolean  Is_Out;
   };
 
 

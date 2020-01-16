@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                   Copyright (C) 2015-2016 ESA & ISAE.                    --
+--                   Copyright (C) 2015-2018 ESA & ISAE.                    --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,12 +43,10 @@ with Ocarina.Backends.XML_Values;
 with Ocarina.Backends.Utils;
 with Ocarina.Backends.XML_Tree.Nodes;
 with Ocarina.Backends.XML_Tree.Nutils;
---  with Ocarina.Backends.Vxworks653_Conf.Mapping;
 with Ocarina.ME_AADL.AADL_Tree.Nodes;
 
 package body Ocarina.Backends.Vxworks653_Conf.Schedule is
 
---   use Locations;
    use Ocarina.ME_AADL;
 
    use Ocarina.Instances.Queries;
@@ -58,9 +56,6 @@ package body Ocarina.Backends.Vxworks653_Conf.Schedule is
 
    use Ocarina.Backends.Utils;
    use Ocarina.Backends.Properties.ARINC653;
-   use Ocarina.Backends.XML_Values;
---   use Ocarina.Backends.Properties;
---   use Ocarina.Backends.Vxworks653_Conf.Mapping;
 
    package ATN renames Ocarina.ME_AADL.AADL_Tree.Nodes;
    package AINU renames Ocarina.ME_AADL.AADL_Instances.Nutils;
@@ -78,7 +73,10 @@ package body Ocarina.Backends.Vxworks653_Conf.Schedule is
    procedure Visit_Processor_Instance (E : Node_Id);
    procedure Visit_Bus_Instance (E : Node_Id);
    procedure Visit_Virtual_Processor_Instance (E : Node_Id);
+   procedure Visit_Subcomponents_Of is new Visit_Subcomponents_Of_G (Visit);
+
    procedure Fill_Scheduling_Slots (Processor : Node_Id);
+
    -----------
    -- Visit --
    -----------
@@ -140,18 +138,8 @@ package body Ocarina.Backends.Vxworks653_Conf.Schedule is
    ----------------------------
 
    procedure Visit_Process_Instance (E : Node_Id) is
-      S : Node_Id;
    begin
-      if not AINU.Is_Empty (Subcomponents (E)) then
-         S := First_Node (Subcomponents (E));
-         while Present (S) loop
-            --  Visit the component instance corresponding to the
-            --  subcomponent S.
-
-            Visit (Corresponding_Instance (S));
-            S := Next_Node (S);
-         end loop;
-      end if;
+      Visit_Subcomponents_Of (E);
    end Visit_Process_Instance;
 
    ---------------------------
@@ -164,8 +152,8 @@ package body Ocarina.Backends.Vxworks653_Conf.Schedule is
       if not AINU.Is_Empty (Subcomponents (E)) then
          S := First_Node (Subcomponents (E));
          while Present (S) loop
-            --  Visit the component instance corresponding to the
-            --  subcomponent S.
+            --  Visit processor subcomponents
+
             if AINU.Is_Processor (Corresponding_Instance (S)) then
                Visit (Corresponding_Instance (S));
             end if;
@@ -253,8 +241,7 @@ package body Ocarina.Backends.Vxworks653_Conf.Schedule is
       if not AINU.Is_Empty (Subcomponents (E)) then
          S := First_Node (Subcomponents (E));
          while Present (S) loop
-            --  Visit the component instance corresponding to the
-            --  subcomponent S.
+            --  Visit virtual processor subcomponents
 
             if AINU.Is_Virtual_Processor (Corresponding_Instance (S)) then
                Visit (Corresponding_Instance (S));

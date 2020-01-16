@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---    Copyright (C) 2008-2009 Telecom ParisTech, 2010-2015 ESA & ISAE.      --
+--    Copyright (C) 2008-2009 Telecom ParisTech, 2010-2018 ESA & ISAE.      --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,10 +128,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
 
    function P_Reference_Type return Node_Id;
    --  Current token must be 'reference'
-
-   function P_Unique_Property_Identifier_Or_Term
-     (Code : Parsing_Code) return Node_Id;
-   --  Current token must be 'value'
 
    function P_Unit_Definition (Container : Node_Id) return Node_Id;
 
@@ -351,10 +347,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
 
    function P_Classifier_Category (Container : Node_Id) return Node_Id is
       use Ocarina.ME_AADL.AADL_Tree.Nodes;
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
-      use Lexer;
-      use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Components;
 
       pragma Unreferenced (Container);
 
@@ -521,7 +513,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
       use Ocarina.AADL_Values;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Identifiers;
 
       pragma Unreferenced (Container);
 
@@ -633,7 +624,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    function P_Multi_Valued_Property return Node_Id is
       use Ocarina.ME_AADL.AADL_Tree.Nodes;
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
-      use Ocarina.FE_AADL.Parser.Properties.Values;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -708,11 +698,8 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    --      [ sign ] real_literal [ unit_identifier ]
 
    function P_Numeric_Term (Code : Parsing_Code) return Node_Id is
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
-      use Ocarina.ME_AADL.AADL_Tree.Nodes;
       use Ocarina.FE_AADL.Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Identifiers;
 
       Start_Loc : Location;
       Loc       : Location;
@@ -824,7 +811,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
       use Ocarina.ME_AADL.AADL_Tree.Nodes;
       use Ocarina.FE_AADL.Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Identifiers;
 
       Loc          : Location;
       Numeric_Term : constant Node_Id :=
@@ -961,7 +947,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Identifiers;
 
       Number_Type     : Node_Id;
       Type_Range      : Node_Id;
@@ -1145,7 +1130,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Identifiers;
       use Ocarina.Builder.AADL.Properties;
 
       Property      : Node_Id;       --  output
@@ -1420,8 +1404,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
      (Identifier   : Node_Id;
       Property_Set : Node_Id) return Node_Id
    is
-      use Ocarina.ME_AADL.AADL_Tree.Nodes;
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
       use Ocarina.Builder.AADL.Properties;
@@ -1490,12 +1472,8 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    --     [ property_set_identifier :: ] property_type_identifier
 
    function P_Property_Type_Designator return Node_Id is
-      use Ocarina.ME_AADL.AADL_Tree.Nodes;
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Properties.Values;
-      use Ocarina.FE_AADL.Parser.Identifiers;
 
       Prop_Id : Node_Id;
       Loc     : Location;
@@ -1583,8 +1561,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Properties.Values;
-      use Ocarina.FE_AADL.Parser.Identifiers;
 
       Loc : Location;
 
@@ -1655,8 +1631,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Identifiers;
-      use Ocarina.FE_AADL.Parser.Properties.Values;
 
       Range_Type  : Node_Id;      --  output
       Number_Type : Node_Id;
@@ -1715,7 +1689,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
       use Ocarina.FE_AADL.Parser.Components;
-      use Ocarina.FE_AADL.Parser.Identifiers;
 
       pragma Unreferenced (Container);
 
@@ -1905,11 +1878,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
 
    function P_Reference_Category (Container : Node_Id) return Node_Id is
       use Ocarina.ME_AADL.AADL_Tree.Nodes;
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
-      use Lexer;
-      use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Components;
-      use Ocarina.FE_AADL.Parser.Identifiers;
 
       pragma Unreferenced (Container);
 
@@ -2189,7 +2157,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    function P_Single_Valued_Property return Node_Id is
       use Ocarina.ME_AADL.AADL_Tree.Nodes;
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
-      use Ocarina.FE_AADL.Parser.Properties.Values;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -2477,8 +2444,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    ------------------------------
 
    function P_Boolean_Or_Record_Term return Node_Id is
-      use Ocarina.ME_AADL.AADL_Tree.Nodes;
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -2982,7 +2947,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
 
       use Ocarina.ME_AADL.AADL_Tree.Nodes;
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
-      use Ocarina.Builder.AADL.Properties;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
       use FE_AADL.Parser.Identifiers;
@@ -3124,8 +3088,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    -------------------------------
 
    function P_Named_Element_Component return Named_Element is
-
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -3172,8 +3134,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    function P_Named_Element_Component_With_Access
      (Component_Cat : Component_Category) return Named_Element
    is
-
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -3235,8 +3195,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    -----------------------------
 
    function P_Named_Element_Feature return Named_Element is
-
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -3289,8 +3247,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    --------------------------
 
    function P_Named_Element_Mode return Named_Element is
-
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -3350,8 +3306,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    --------------------------
 
    function P_Named_Element_Flow return Named_Element is
-
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -3428,8 +3382,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    -------------------------------------
 
    function P_Named_Element_End_To_End_Flow return Named_Element is
-
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -3483,8 +3435,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    --------------------------------
 
    function P_Named_Element_Identifier return Named_Element is
-
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -3557,8 +3507,6 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    ---------------------------------------------
 
    function P_Named_Element_Port_Or_Access_Or_Event return Named_Element is
-
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
 
@@ -3674,11 +3622,9 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    --     named_element_identifier | named_element_array_selection_identifier
 
    function P_Contained_Element_Path (Container : Node_Id) return Node_Id is
-      use Ocarina.ME_AADL.AADL_Tree.Nodes;
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
-      use Ocarina.FE_AADL.Parser.Identifiers;
       use Ocarina.FE_AADL.Parser.Annexes;
       use Ocarina.Builder.AADL.Properties;
 
@@ -3758,14 +3704,10 @@ package body Ocarina.FE_AADL.Parser.Properties.Values is
    --     named_element_identifier | named_element_array_selection_identifier
 
    function P_Contained_Element (Container : Node_Id) return Node_Id is
-      use Ocarina.ME_AADL.AADL_Tree.Nodes;
-      use Ocarina.ME_AADL.AADL_Tree.Nutils;
       use Lexer;
       use Ocarina.ME_AADL.Tokens;
       use Ocarina.FE_AADL.Parser.Identifiers;
-      use Ocarina.FE_AADL.Parser.Annexes;
       use Ocarina.FE_AADL.Parser.Components.Arrays;
-      use Ocarina.Builder.AADL.Properties;
 
       Loc           : Location;
       Start_Loc     : Location;

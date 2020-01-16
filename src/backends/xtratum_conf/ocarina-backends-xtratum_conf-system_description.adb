@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                   Copyright (C) 2011-2016 ESA & ISAE.                    --
+--                   Copyright (C) 2011-2018 ESA & ISAE.                    --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,8 +147,8 @@ package body Ocarina.Backends.Xtratum_Conf.System_Description is
       if not AINU.Is_Empty (Subcomponents (E)) then
          S := First_Node (Subcomponents (E));
          while Present (S) loop
-            --  Visit the component instance corresponding to the
-            --  subcomponent S.
+            --  Visit processor subcomponents
+
             if AINU.Is_Processor (Corresponding_Instance (S)) then
                Visit (Corresponding_Instance (S));
             end if;
@@ -173,6 +173,7 @@ package body Ocarina.Backends.Xtratum_Conf.System_Description is
    ------------------------------
    -- Visit_Processor_Instance --
    ------------------------------
+
    procedure Visit_Processor_Instance (E : Node_Id) is
       N         : Node_Id;
       Processes : List_Id;

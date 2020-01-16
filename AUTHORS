@@ -1,15 +1,38 @@
-David Abad-Garcia
-Thomas Autret
-Julien Delange
-Olivier Gilles
-Jerome Hugues
-Fabrice Kordon
-Stephane Lanarre
-Gilles Lasnier
-Laurent Pautet
-Xavier Renault
-Clement Tourriere
-Thomas Vergnaud
-Vo Ngoc Minh
-Bechir Zalila
+Current maintainer is
+- Jerome Hugues
 
+Contributors
+
+LNT Back-end, contributed by ENIS
+
+- Hana Mkaouar
+
+EMV2 Front-end, contributed by ENIS
+
+- Wafa GABSI
+- Fatma KACEM
+- Yousra REKIK
+
+AO4AADL Front-end, contributed by ENIS
+
+- Sihem LOUKIL
+- Rahma BOUAZIZ
+
+Initial design team and student contributors from TelecomParisTech for
+the AADL and BA front-end; middle-end; PolyORB-HI/Ada, PolyORB-HI/C,
+REAL, Petri Net backends:
+
+- David Abad-Garcia
+- Thomas Autret
+- Julien Delange
+- Olivier Gilles
+- Jerome Hugues
+- Fabrice Kordon
+- Stephane Lanarre
+- Gilles Lasnier
+- Laurent Pautet
+- Xavier Renault
+- Clement Tourriere
+- Thomas Vergnaud
+- Vo Ngoc Minh
+- Bechir Zalila

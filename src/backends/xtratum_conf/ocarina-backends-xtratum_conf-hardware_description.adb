@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                   Copyright (C) 2011-2016 ESA & ISAE.                    --
+--                   Copyright (C) 2011-2018 ESA & ISAE.                    --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,7 +59,6 @@ package body Ocarina.Backends.Xtratum_Conf.Hardware_Description is
    use Ocarina.Backends.Messages;
    use Ocarina.Backends.Properties;
    use Ocarina.Backends.Properties.ARINC653;
-   use Ocarina.Backends.XML_Values;
    use Ocarina.Backends.XML_Tree.Nutils;
 
    package AINU renames Ocarina.ME_AADL.AADL_Instances.Nutils;
@@ -180,8 +179,8 @@ package body Ocarina.Backends.Xtratum_Conf.Hardware_Description is
       if not AINU.Is_Empty (Subcomponents (E)) then
          S := First_Node (Subcomponents (E));
          while Present (S) loop
-            --  Visit the component instance corresponding to the
-            --  subcomponent S.
+            --  Visit memory subcomponents
+
             if AINU.Is_Memory (Corresponding_Instance (S)) then
                Visit (Corresponding_Instance (S));
             end if;
@@ -201,8 +200,8 @@ package body Ocarina.Backends.Xtratum_Conf.Hardware_Description is
       if not AINU.Is_Empty (Subcomponents (E)) then
          S := First_Node (Subcomponents (E));
          while Present (S) loop
-            --  Visit the component instance corresponding to the
-            --  subcomponent S.
+            --  Visit processor subcomponents
+
             if AINU.Is_Processor (Corresponding_Instance (S)) then
                Visit (Corresponding_Instance (S));
             end if;

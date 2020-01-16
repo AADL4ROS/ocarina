@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---    Copyright (C) 2008-2009 Telecom ParisTech, 2010-2017 ESA & ISAE.      --
+--    Copyright (C) 2008-2009 Telecom ParisTech, 2010-2019 ESA & ISAE.      --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,7 @@ with Ocarina.Backends.PO_HI_Ada.Naming;
 with Ocarina.Backends.PO_HI_Ada.Marshallers;
 with Ocarina.Backends.PO_HI_Ada.Deployment;
 with Ocarina.Backends.PO_HI_Ada.Activity;
+with Ocarina.Backends.PO_HI_Ada.Job;
 with Ocarina.Backends.PO_HI_Ada.Subprograms;
 with Ocarina.Backends.PO_HI_Ada.Transport;
 with Ocarina.Backends.PO_HI_Ada.Types;
@@ -61,14 +62,11 @@ package body Ocarina.Backends.PO_HI_Ada is
    use GNAT.OS_Lib;
    use Ocarina.Output;
    use Ocarina.Instances;
-   use Ocarina.Backends.Ada_Tree.Generator;
    use Ocarina.Backends.Expander;
    use Ocarina.Backends.Messages;
-   use Ocarina.Backends.PO_HI_Ada.Runtime;
    use Ocarina.Backends.Utils;
    use Ocarina.Backends.Properties;
    use Ocarina.Backends.Build_Utils;
-   use Ocarina.Backends.Execution_Utils;
    use Ocarina.Backends.Execution_Tests;
 
    procedure Visit_Architecture_Instance (E : Node_Id);
@@ -212,8 +210,17 @@ package body Ocarina.Backends.PO_HI_Ada is
       if Execution_Platform /= Platform_LEON_RTEMS
         and then Execution_Platform /= Platform_LEON_RTEMS_POSIX
       then
-         Write_Line ("GNATMAKE = " & Target_Prefix.all & "gnatmake");
-         Write_Line ("GNAT = " & Target_Prefix.all & "gnat");
+         --  For GNAT ARM GPL 2018, gnatmake is no longer provided, we
+         --  have to rely on gprbuild instead.
+
+         if Execution_Platform /= Platform_GNAT_Runtime then
+            Write_Line ("GNATMAKE = " & Target_Prefix.all & "gnatmake");
+            Write_Line ("GNAT = " & Target_Prefix.all & "gnat");
+         else
+            Write_Line ("GNATMAKE = " & "gprbuild");
+            Write_Line ("GNAT = " & Target_Prefix.all & "gnat");
+         end if;
+
          Write_Line ("CC = " & Target_Prefix.all & "gcc");
          Write_Line ("TARGET = " & Target.all);
          Write_Line ("BUILD = Debug");
@@ -283,7 +290,7 @@ package body Ocarina.Backends.PO_HI_Ada is
          Write_Char (ASCII.HT);
          Write_Str
            ("  $(GNATMAKE) -x -p -P$(PROJECT_FILE) -XTARGET=$(TARGET)" &
-            " -XBUILD=$(BUILD) -XCGCTRL=$(CGCTRL) ${USER_CFLAGS}");
+            " -XBUILD=$(BUILD) -XCGCTRL=$(CGCTRL) -cargs ${USER_CFLAGS}");
 
          --  If there are C source or C libraries, there will be more
          --  options.
@@ -293,7 +300,7 @@ package body Ocarina.Backends.PO_HI_Ada is
 
          Write_Eol;
 
-         --  Use gnateliim to determine which portion of code is
+         --  Use gnatelim to determine which portion of code is
          --  unused and recompile the application with Eliminate
          --  pragmas. Note: gnatelim is available in GNAT GPL/Pro,
          --  but not GCC
@@ -449,6 +456,11 @@ package body Ocarina.Backends.PO_HI_Ada is
       if Ada_Runtime /= No_Name then
          Write_Eol;
          Write_Indentation;
+         Write_Str ("for Target use ");
+         Write_Name (Ada_Runtime);
+         Write_Line ("'Target;");
+         Write_Eol;
+         Write_Indentation;
          Write_Str ("for Runtime (""Ada"") use ");
          Write_Name (Ada_Runtime);
          Write_Line ("'Runtime (""Ada"");");
@@ -489,9 +501,15 @@ package body Ocarina.Backends.PO_HI_Ada is
       case Transport_API is
          when Transport_BSD_Sockets =>
             Write_Indentation;
-            Write_Line
-              ("for Body (""PolyORB_HI.Transport_Low_Level"")" &
-               " use ""polyorb_hi-transport_low_level_sockets.adb"";");
+            if Add_SPARK2014_Annotations then
+               Write_Line
+                 ("for Body (""PolyORB_HI.Transport_Low_Level"")" &
+                    " use ""polyorb_hi-transport_low_level_spark.adb"";");
+            else
+               Write_Line
+                 ("for Body (""PolyORB_HI.Transport_Low_Level"")" &
+                    " use ""polyorb_hi-transport_low_level_sockets.adb"";");
+            end if;
 
          when Transport_SpaceWire =>
             raise Program_Error;
@@ -728,6 +746,7 @@ package body Ocarina.Backends.PO_HI_Ada is
       Types.Package_Spec.Visit (E);
       Subprograms.Package_Spec.Visit (E);
       Activity.Package_Spec.Visit (E);
+      Job.Package_Spec.Visit (E);
       Transport.Package_Spec.Visit (E);
       Marshallers.Package_Spec.Visit (E);
 
@@ -737,6 +756,7 @@ package body Ocarina.Backends.PO_HI_Ada is
       Subprograms.Package_Body.Visit (E);
       Transport.Package_Body.Visit (E);
       Activity.Package_Body.Visit (E);
+      Job.Package_Body.Visit (E);
       Marshallers.Package_Body.Visit (E);
 
       --  The main subprogram

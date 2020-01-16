@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---    Copyright (C) 2006-2009 Telecom ParisTech, 2010-2018 ESA & ISAE.      --
+--    Copyright (C) 2006-2009 Telecom ParisTech, 2010-2019 ESA & ISAE.      --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -338,8 +338,17 @@ package body Ocarina.Backends.PO_HI_Ada.Main is
               Thread_Aperiodic   |
               Thread_Background  |
               Thread_ISR         =>
+
+               if Has_Ports (E) then
+                  Add_With_Package
+                    (E => RU (RU_PolyORB_HI_Generated_Activity, False),
+                     Used         => False,
+                     Warnings_Off => True,
+                     Elaborated   => True);
+               end if;
+
                Add_With_Package
-                 (E            => RU (RU_PolyORB_HI_Generated_Activity, False),
+                 (E            => RU (Ru_Polyorb_Hi_Generated_Job, False),
                   Used         => False,
                   Warnings_Off => True,
                   Elaborated   => True);

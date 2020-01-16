@@ -30,11 +30,9 @@ AADL_V2_PROPERTIES = $(srcdir)/AADLv2/aadl_project.aadl	\
 	$(srcdir)/AADLv2/base_types.aadl		\
 	$(srcdir)/AADLv2/replication_properties.aadl	\
 	$(srcdir)/AADLv2/errorlibrary.aadl		\
-	$(srcdir)/AADLv2/taste_properties.aadl		\
-	$(srcdir)/AADLv2/TASTE_IV_Properties.aadl	\
-	$(srcdir)/AADLv2/TASTE_DV_Properties.aadl	\
 	$(srcdir)/AADLv2/transformations.aadl		\
-	$(srcdir)/AADLv2/ocarina_library.aadl
+	$(srcdir)/AADLv2/ocarina_library.aadl		\
+	$(srcdir)/AADLv2/fmi.aadl
 
 AADL_V2_COMPONENTS = $(srcdir)/AADLv2/components/*.aadl \
 		     $(srcdir)/AADLv2/components/devices/*.aadl \

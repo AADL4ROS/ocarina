@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---    Copyright (C) 2005-2009 Telecom ParisTech, 2010-2015 ESA & ISAE.      --
+--    Copyright (C) 2005-2009 Telecom ParisTech, 2010-2019 ESA & ISAE.      --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,6 +58,7 @@ package body Ocarina.Instances is
    use Ocarina.Namet;
    use Ocarina.Output;
 
+   use Ocarina.ME_AADL;
    use Ocarina.ME_AADL.AADL_Tree.Nodes;
    use Ocarina.ME_AADL.AADL_Instances.Nodes;
    use Ocarina.ME_AADL.AADL_Instances.Entities;
@@ -145,13 +146,17 @@ package body Ocarina.Instances is
    -- Instantiate_Model --
    -----------------------
 
-   function Instantiate_Model (Root : Node_Id) return Node_Id is
+   function Instantiate_Model (Root : Node_Id;
+                               Exit_If_Error : Boolean := True)
+                              return Node_Id
+   is
       pragma Assert (Kind (Root) = K_AADL_Specification);
 
       Root_Systems  : Node_List;
       Instance_Root : Node_Id;
       Root_System   : Node_Id := No_Node;
       List_Node     : Node_Id;
+      L1            : Node_List;
 
       procedure Report_Root_Systems_To_User;
 
@@ -220,7 +225,8 @@ package body Ocarina.Instances is
 
          if No (Root_System) then
             Error_Loc (1) := No_Location;
-            DE ("Cannot find a root system");
+            Exit_On_Error (Exit_If_Error, "Cannot find a root system");
+            return No_Node;
          end if;
 
          if Root_System_Name /= No_Name
@@ -236,7 +242,7 @@ package body Ocarina.Instances is
               (Root_System, False, True);
             DE ("system % is not a root system, use %");
             Root_System := No_Node;
-            Exit_On_Error (True, "Cannot instantiate AADL model");
+            Exit_On_Error (Exit_If_Error, "Cannot instantiate AADL model");
          end if;
       end if;
 
@@ -246,7 +252,9 @@ package body Ocarina.Instances is
 
       if No (Root_System) then
          Instance_Root := No_Node;
-         Exit_On_Error (True, "Cannot instantiate full model, exit now");
+         Exit_On_Error (Exit_If_Error,
+                        "Cannot instantiate full model, exit now");
+         return No_Node;
       else
          --  The first step of the instantiation consist of propagate the
          --  properties declared in the AADL packages to the AADL
@@ -298,6 +306,35 @@ package body Ocarina.Instances is
            (Instance_Root,
             Ocarina.ME_AADL.AADL_Instances.Debug.W_Node_Id'Access);
       end if;
+
+      --  XXX: In some cases there are some AADL Entities that are not
+      --  intanciated. For example a subprogram or a data that is used
+      --  only in the scope of a BA annex : For instance a BA variable
+      --  that have as Classifier_Ref a Data component that is not
+      --  used in other AADL components, An other case, a Subprogram
+      --  component called only in the scope of one or more Behavior
+      --  specification of other components.  In these cases, we
+      --  instanciate these components to able to use them in the code
+      --  generation backend.
+
+      --  This step is probably too large, and could be restricted to
+      --  subprogram and data component types only.
+
+      L1 := Find_All_Declarations (Root,
+                                   (ATN.K_Component_Type,
+                                    ATN.K_Component_Implementation));
+      List_Node := L1.First;
+      while Present (List_Node) loop
+         if No (Default_Instance (List_Node)) then
+            if ATE.Get_Category_Of_Component (List_Node) = CC_Subprogram
+              or else ATE.Get_Category_Of_Component (List_Node) = CC_Data
+            then
+               Set_Instance (List_Node,
+                             Instantiate_Component (Instance_Root, List_Node));
+            end if;
+         end if;
+         List_Node := ATN.Next_Entity (List_Node);
+      end loop;
 
       return Instance_Root;
    end Instantiate_Model;

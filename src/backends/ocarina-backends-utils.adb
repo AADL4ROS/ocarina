@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---    Copyright (C) 2005-2009 Telecom ParisTech, 2010-2018 ESA & ISAE.      --
+--    Copyright (C) 2005-2009 Telecom ParisTech, 2010-2019 ESA & ISAE.      --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,9 @@ with Ocarina.Backends.Messages;
 with Ocarina.Backends.Ada_Tree.Nodes;
 with Ocarina.Backends.Ada_Tree.Nutils;
 with Ocarina.Backends.Ada_Values;
+with Ocarina.Instances.Queries;
+with Ocarina.Backends.Helper;
+with Utils; use Utils;
 
 package body Ocarina.Backends.Utils is
 
@@ -69,6 +72,10 @@ package body Ocarina.Backends.Utils is
    use Ocarina.ME_AADL.AADL_Instances.Entities;
    use Ocarina.Backends.Messages;
    use Ocarina.Backends.Ada_Tree.Nutils;
+   use Ocarina.Instances.Queries;
+   use Ocarina.Backends.Helper;
+
+   type Browsing_Kind is (By_Source, By_Destination);
 
    --  The entered directories stack
 
@@ -4095,6 +4102,47 @@ package body Ocarina.Backends.Utils is
       return Core_Id;
    end Get_Core_Id;
 
+   -------------
+   -- Is_Core --
+   -------------
+
+   function Is_Core (VP : Node_Id) return Boolean is
+   begin
+      return Is_Virtual_Processor (VP) and then
+        Is_Defined_Property (VP, "processor_properties::core_id");
+   end Is_Core;
+
+   ------------------
+   -- Is_Partition --
+   ------------------
+
+   function Is_Partition (VP : Node_Id) return Boolean is
+   begin
+      return Is_Virtual_Processor (VP) and then
+        Is_Defined_Property (VP, "deployment::execution_platform");
+   end Is_Partition;
+
+   -------------------------
+   -- Get_Number_Of_Cores --
+   -------------------------
+
+   function Get_Number_Of_Cores (P : Node_Id) return Unsigned_Long_Long is
+      Number_Of_Cores : Unsigned_Long_Long := 0;
+
+   begin
+      for Elt of Subcomponents_Of (P) loop
+         if Is_Core (Corresponding_Instance (Elt)) then
+            Number_Of_Cores := Number_Of_Cores + 1;
+         end if;
+      end loop;
+
+      if Number_Of_Cores /= 0 then
+         return Number_Of_Cores;
+      else
+         return 1;
+      end if;
+   end Get_Number_Of_Cores;
+
    ------------------------------
    -- Visit_Subcomponents_Of_G --
    ------------------------------
@@ -4114,5 +4162,29 @@ package body Ocarina.Backends.Utils is
          end loop;
       end if;
    end Visit_Subcomponents_Of_G;
+
+   --------------------------------
+   -- Has_Behavior_Specification --
+   --------------------------------
+
+   function Has_Behavior_Specification (E : Node_Id) return Boolean is
+      F : Node_Id;
+   begin
+      if not AAU.Is_Empty (Annexes (E)) then
+         F := First_Node (Annexes (E));
+
+         while Present (F) loop
+            if (To_Upper (AIN.Display_Name (AIN.Identifier (F))) =
+                  To_Upper (Get_String_Name ("behavior_specification")))
+            then
+               return True;
+            end if;
+
+            F := Next_Node (F);
+         end loop;
+      end if;
+
+      return False;
+   end Has_Behavior_Specification;
 
 end Ocarina.Backends.Utils;

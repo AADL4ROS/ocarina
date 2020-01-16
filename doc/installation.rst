@@ -30,7 +30,8 @@ An Ada compiler:
    versions installed. See below explanations on the ADA environment
    variable if you need to override the default guess.
 
-.. note:: Ocarina requires at least GCC/FSF 5.2 or GNAT GPL 2015.
+.. note:: Ocarina requires at least GCC/FSF 7 or GNAT GPL 2016 or more
+          recent.
 
 * autoconf, automake, GNU Make, python
 
@@ -47,7 +48,7 @@ Optional components:
 Semi-automated build instructions
 #################################
 
-The `ocarina-build https://github.com/OpenAADL/ocarina-build/`_
+The `ocarina-build <https://github.com/OpenAADL/ocarina-build/>`_
 repository proposes a script, `build_ocarina.sh`, to get source code,
 compile and test Ocarina.
 

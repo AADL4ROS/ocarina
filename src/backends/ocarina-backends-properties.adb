@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---    Copyright (C) 2008-2009 Telecom ParisTech, 2010-2017 ESA & ISAE.      --
+--    Copyright (C) 2008-2009 Telecom ParisTech, 2010-2019 ESA & ISAE.      --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -313,30 +313,24 @@ package body Ocarina.Backends.Properties is
    Platform_Bench_Name                  : Name_Id;
    Platform_Native_Compcert_Name        : Name_Id;
    Platform_LINUX32_Name                : Name_Id;
+   Platform_Linux_DLL_Name              : Name_Id;
    Platform_Win32_Name                  : Name_Id;
    Platform_LINUX32_Xenomai_Native_Name : Name_Id;
    Platform_LINUX32_Xenomai_Posix_Name  : Name_Id;
    Platform_LINUX64_Name                : Name_Id;
-   Platform_NDS_RTEMS_Name              : Name_Id;
-   Platform_NDS_RTEMS_POSIX_Name        : Name_Id;
-   Platform_Gumstix_RTEMS_Name          : Name_Id;
-   Platform_Gumstix_RTEMS_POSIX_Name    : Name_Id;
    Platform_LEON_RTEMS_Name             : Name_Id;
    Platform_LEON_RTEMS_POSIX_Name       : Name_Id;
    Platform_X86_LINUXTASTE_Name         : Name_Id;
-   Platform_X86_RTEMS_Name              : Name_Id;
-   Platform_X86_RTEMS_POSIX_Name        : Name_Id;
    Platform_LEON_GNAT_Name              : Name_Id;
    Platform_LEON_ORK_Name               : Name_Id;
    Platform_LEON3_SCOC3_Name            : Name_Id;
    Platform_LEON3_XM3_Name              : Name_Id;
    Platform_LEON3_Xtratum_Name          : Name_Id;
    Platform_ERC32_ORK_Name              : Name_Id;
-   Platform_ARM_DSLINUX_Name            : Name_Id;
-   Platform_ARM_N770_Name               : Name_Id;
    Platform_MARTE_OS_Name               : Name_Id;
    Platform_Vxworks_Name                : Name_Id;
-   Platform_GNAT_Runtime_Name             : Name_Id;
+   Platform_GNAT_Runtime_Name           : Name_Id;
+   Platform_AIR_Name                    : Name_Id;
 
    Transport_BSD_Sockets_Name : Name_Id;
    Transport_SpaceWire_Name   : Name_Id;
@@ -1362,7 +1356,7 @@ package body Ocarina.Backends.Properties is
                --  and a null source name and a null source text is a
                --  wrong built subprogram.
 
-               return Subprogram_Opaque_C;
+               return Subprogram_Unknown;
             end if;
 
          when Language_CPP =>
@@ -1447,11 +1441,17 @@ package body Ocarina.Backends.Properties is
                      return Subprogram_Unknown;
                   end if;
                else
-                  --  A subprogram having no implementation language
-                  --  and a *null* call sequence list is an empty
-                  --  subprogram.
+                  if Has_Behavior_Specification (S) then
+                     --  A subprogram is defined using a behavior specification
 
-                  return Subprogram_Empty;
+                     return Subrogram_With_Behavior_Specification;
+                  else
+                     --  A subprogram having no implementation language
+                     --  and a *null* call sequence list and no behavior
+                     --  specification is an empty subprogram.
+
+                     return Subprogram_Empty;
+                  end if;
                end if;
             end if;
 
@@ -2097,6 +2097,8 @@ package body Ocarina.Backends.Properties is
             Result := Thread_With_Compute_Entrypoint;
          elsif CS_Cnt >= 1 then
             Result := Thread_With_Call_Sequence;
+         elsif Has_Behavior_Specification (T) then
+            Result := Thread_With_Behavior_Specification;
          end if;
       end if;
 
@@ -2289,6 +2291,24 @@ package body Ocarina.Backends.Properties is
       return Get_Reference_Property (P, Processor_Binding);
    end Get_Bound_Processor;
 
+   ---------------------------
+   -- Get_Bound_Processor_L --
+   ---------------------------
+
+   function Get_Bound_Processor_L (P : Node_Id) return List_Id is
+   begin
+      if not Is_Defined_Reference_Property (P, Processor_Binding)
+        and then Is_Process (P)
+      then
+         Display_Located_Error
+           (AIN.Loc (Parent_Subcomponent (P)),
+            "This process has to be bound to a processor",
+            Fatal => True);
+      end if;
+
+      return Get_List_Property (P, Processor_Binding);
+   end Get_Bound_Processor_L;
+
    ----------------------
    -- Get_Bound_Memory --
    ----------------------
@@ -2334,30 +2354,42 @@ package body Ocarina.Backends.Properties is
 
       if not Is_System (Parent_Component (C)) then
          return No_Node;
+
       elsif Is_System (Parent_Component (C))
         and then Is_Process
           (Parent_Component (Get_Referenced_Entity (AIN.Source (C))))
         and then Is_Process
           (Parent_Component (Get_Referenced_Entity (AIN.Destination (C))))
         and then
-          Get_Execution_Platform
+        ((Get_Execution_Platform
             (Get_Bound_Processor
                (Parent_Component (Get_Referenced_Entity (AIN.Source (C))))) =
-          Platform_LEON3_XM3
+            Platform_LEON3_XM3
+            and then
+            Get_Execution_Platform
+              (Get_Bound_Processor
+                 (Parent_Component
+                    (Get_Referenced_Entity (AIN.Destination (C))))) =
+            Platform_LEON3_XM3)
+           or else
+           (Get_Execution_Platform
+              (Get_Bound_Processor
+                 (Parent_Component (Get_Referenced_Entity (AIN.Source (C))))) =
+              Platform_AIR
+              and then
+              Get_Execution_Platform
+                (Get_Bound_Processor
+                   (Parent_Component
+                      (Get_Referenced_Entity (AIN.Destination (C))))) =
+              Platform_AIR))
         and then
-          Get_Execution_Platform
-            (Get_Bound_Processor
-               (Parent_Component
-                  (Get_Referenced_Entity (AIN.Destination (C))))) =
-          Platform_LEON3_XM3
-        and then
-          Parent_Component
-            (Parent_Subcomponent
-               (Parent_Component
-                  (Get_Referenced_Entity (AIN.Destination (C))))) =
-          Parent_Component
-            (Parent_Subcomponent
-               (Parent_Component (Get_Referenced_Entity (AIN.Source (C)))))
+        Parent_Component
+          (Parent_Subcomponent
+             (Parent_Component
+                (Get_Referenced_Entity (AIN.Destination (C))))) =
+        Parent_Component
+        (Parent_Subcomponent
+           (Parent_Component (Get_Referenced_Entity (AIN.Source (C)))))
       then
          return No_Node;
 
@@ -2367,6 +2399,7 @@ package body Ocarina.Backends.Properties is
               (AIN.Loc (C),
                "This connection has to be bound to a bus",
                Fatal => True);
+
          else
             --  We do not enforce connection binding for the remaining
             --  generators.
@@ -2431,14 +2464,6 @@ package body Ocarina.Backends.Properties is
             return Platform_Bench;
          elsif P_Name = Platform_Native_Compcert_Name then
             return Platform_Native_Compcert;
-         elsif P_Name = Platform_Gumstix_RTEMS_POSIX_Name then
-            return Platform_Gumstix_RTEMS_POSIX;
-         elsif P_Name = Platform_Gumstix_RTEMS_Name then
-            return Platform_Gumstix_RTEMS;
-         elsif P_Name = Platform_NDS_RTEMS_POSIX_Name then
-            return Platform_NDS_RTEMS_POSIX;
-         elsif P_Name = Platform_NDS_RTEMS_Name then
-            return Platform_NDS_RTEMS;
          elsif P_Name = Platform_LEON_RTEMS_POSIX_Name then
             return Platform_LEON_RTEMS_POSIX;
          elsif P_Name = Platform_LEON_RTEMS_Name then
@@ -2447,6 +2472,8 @@ package body Ocarina.Backends.Properties is
             return Platform_X86_LINUXTASTE;
          elsif P_Name = Platform_LINUX32_Name then
             return Platform_LINUX32;
+         elsif P_Name = Platform_LINUX_DLL_Name then
+            return Platform_LINUX_DLL;
          elsif P_Name = Platform_Win32_Name then
             return Platform_WIN32;
          elsif P_Name = Platform_LINUX32_Xenomai_Native_Name then
@@ -2455,10 +2482,6 @@ package body Ocarina.Backends.Properties is
             return Platform_LINUX32_XENOMAI_POSIX;
          elsif P_Name = Platform_LINUX64_Name then
             return Platform_LINUX64;
-         elsif P_Name = Platform_X86_RTEMS_POSIX_Name then
-            return Platform_X86_RTEMS_POSIX;
-         elsif P_Name = Platform_X86_RTEMS_Name then
-            return Platform_X86_RTEMS;
          elsif P_Name = Platform_LEON_GNAT_Name then
             return Platform_LEON_GNAT;
          elsif P_Name = Platform_LEON_ORK_Name then
@@ -2471,16 +2494,14 @@ package body Ocarina.Backends.Properties is
             return Platform_LEON3_XTRATUM;
          elsif P_Name = Platform_ERC32_ORK_Name then
             return Platform_ERC32_ORK;
-         elsif P_Name = Platform_ARM_DSLINUX_Name then
-            return Platform_ARM_DSLINUX;
-         elsif P_Name = Platform_ARM_N770_Name then
-            return Platform_ARM_N770;
          elsif P_Name = Platform_MARTE_OS_Name then
             return Platform_MARTE_OS;
          elsif P_Name = Platform_Vxworks_Name then
             return Platform_VxWorks;
          elsif P_Name = Platform_GNAT_Runtime_Name then
             return Platform_GNAT_Runtime;
+         elsif P_Name = Platform_AIR_Name then
+            return Platform_AIR;
          else
             return Platform_None;
          end if;
@@ -3024,17 +3045,9 @@ package body Ocarina.Backends.Properties is
       Platform_Native_Name              := Get_String_Name ("native");
       Platform_Bench_Name               := Get_String_Name ("bench");
       Platform_Native_Compcert_Name     := Get_String_Name ("native_compcert");
-      Platform_Gumstix_RTEMS_Name       := Get_String_Name ("gumstix_rtems");
-      Platform_Gumstix_RTEMS_POSIX_Name :=
-        Get_String_Name ("gumstix_rtems_posix");
-
-      Platform_NDS_RTEMS_Name       := Get_String_Name ("nds_rtems");
-      Platform_NDS_RTEMS_POSIX_Name := Get_String_Name ("nds_rtems_posix");
-
-      Platform_X86_RTEMS_Name              := Get_String_Name ("x86_rtems");
-      Platform_X86_RTEMS_POSIX_Name := Get_String_Name ("x86_rtems_posix");
-      Platform_LINUX32_Name                := Get_String_Name ("linux32");
-      Platform_Win32_Name                  := Get_String_Name ("win32");
+      Platform_LINUX32_Name             := Get_String_Name ("linux32");
+      Platform_LINUX_DLL_Name           := Get_String_Name ("linux_dll");
+      Platform_Win32_Name               := Get_String_Name ("win32");
       Platform_LINUX32_Xenomai_Native_Name :=
         Get_String_Name ("linux32_xenomai_native");
       Platform_LINUX32_Xenomai_Posix_Name :=
@@ -3049,11 +3062,10 @@ package body Ocarina.Backends.Properties is
       Platform_LEON3_XM3_Name        := Get_String_Name ("leon3_xm3");
       Platform_LEON3_Xtratum_Name    := Get_String_Name ("leon3_xtratum");
       Platform_ERC32_ORK_Name        := Get_String_Name ("erc32_ork");
-      Platform_ARM_DSLINUX_Name      := Get_String_Name ("arm_dslinux");
-      Platform_ARM_N770_Name         := Get_String_Name ("arm_n770");
       Platform_MARTE_OS_Name         := Get_String_Name ("marte_os");
       Platform_Vxworks_Name          := Get_String_Name ("vxworks");
-      Platform_GNAT_Runtime_Name       := Get_String_Name ("gnat_runtime");
+      Platform_GNAT_Runtime_Name     := Get_String_Name ("gnat_runtime");
+      Platform_AIR_Name              := Get_String_Name ("air");
 
       Transport_BSD_Sockets_Name := Get_String_Name ("bsd_sockets");
       Transport_SpaceWire_Name   := Get_String_Name ("spacewire");
@@ -3656,7 +3668,7 @@ package body Ocarina.Backends.Properties is
       Res            : Time_Array (0 .. 1);
       Property_Value : Node_Id;
       Range_Node     : Node_Id;
-      use Ocarina.AADL_Values;
+
    begin
       if Is_Defined_Property (E, Compute_Execution_Time) then
          --  CRAP !!

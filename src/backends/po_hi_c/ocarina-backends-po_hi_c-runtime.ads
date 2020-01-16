@@ -54,7 +54,8 @@ package Ocarina.Backends.PO_HI_C.Runtime is
       RH_Types,                      --  the types header
       RH_Marshallers,                --  the marshallers header
       RH_Subprograms,                --  the subprograms
-      RH_Deployment);
+      RH_Deployment,
+      RH_AADL);
 
    --  Runtime Entities
 
@@ -128,6 +129,8 @@ package Ocarina.Backends.PO_HI_C.Runtime is
       RE_Gqueue_Get_Value,               -- __po_hi_gqueue_get_value
       RE_Gqueue_Next_Value,              -- __po_hi_gqueue_next_value
       RE_Gqueue_Wait_For_Incoming_Event, -- __po_hi_gqueue_wait_for_incoming
+      RE_Gqueue_Wait_For_Specific_Incoming_Events,
+      --  __po_hi_gqueue_wait_for_specific_incoming_events
       RE_Compute_Next_Period,            -- __po_hi_compute_next_period
       RE_Sporadic_Wait,                  -- __po_hi_sporadic_wait
       RE_Compute_Miss,                   -- __po_hi_compute_miss
@@ -171,6 +174,7 @@ package Ocarina.Backends.PO_HI_C.Runtime is
       RE_Nb_Buses,                       --  __PO_HI_NB_BUSES
       RE_Nb_Protocols,                   --  __PO_HI_NB_PROTOCOLS
       RE_My_Node,                        --  __PO_HI_MY_NODE
+      RE_My_Node_Name,                   --  __PO_HI_MY_NODE_NAME
       RE_Port_Type_Content,              --  __PO_HI_PORT_TYPE_CONTENT
       RE_Gqueue_Fifo_Indata,             --  __PO_HI_GQUEUE_FIFO_DATA
       RE_Gqueue_Fifo_Out,                --  __PO_HI_GQUEUE_FIFO_OUT
@@ -255,7 +259,22 @@ package Ocarina.Backends.PO_HI_C.Runtime is
       RE_Node_Addr,                      --  __po_hi_node_addr
       RE_Entity_Table,                   --  __po_hi_entity_table
       RE_Port_Global_Model_Names,        --  __po_hi_port_global_model_names
-      RE_Port_Global_To_Local            --  __po_hi_port_global_to_local
+      RE_Port_Global_To_Local,           --  __po_hi_port_global_to_local
+
+      RE_Local_Port,                     --  LOCAL_PORT
+      RE_PORT_VARIABLE,                  --  PORT_VARIABLE
+      RE_REQUEST_PORT,                   --  REQUEST_PORT
+
+      RE_Initial,                        --  __po_hi_initial
+      RE_Initial_Complete,               --  __po_hi_initial_complete
+      RE_Initial_Complete_Final,         --  __po_hi_initial_complete_final
+      RE_Initial_Final,                  --  __po_hi_initial_final
+      RE_Complete,                       --  __po_hi_complete
+      RE_Complete_Final,                 --  __po_hi_complete_final
+      RE_Final,                          --  __po_hi_final
+      RE_Execution,                      --  __po_hi_execution
+      RE_State_Kind_T,                   --  __po_hi_state_kind_t
+      RE_Ba_Automata_State_T             --  __po_hi_ba_automata_state_t
       );
 
    --  Runtime types
@@ -264,6 +283,8 @@ package Ocarina.Backends.PO_HI_C.Runtime is
    subtype RC_Id is RE_Id range RE_Default_Priority .. RE_SUCCESS;
    subtype RF_Id is RE_Id range RE_Null .. RE_Wait_For_Tasks;
    subtype RV_Id is RE_Id range RE_Operation_Names .. RE_Port_Global_To_Local;
+   subtype RM_Id is RE_Id range RE_Local_Port .. RE_REQUEST_PORT;
+   subtype RB_Id is RE_Id range RE_Initial .. RE_Ba_Automata_State_T;
 
    RE_Header_Table : constant array (RE_Id) of RH_Id :=
      (RE_Null => RH_Null,
@@ -336,7 +357,7 @@ package Ocarina.Backends.PO_HI_C.Runtime is
       RE_Protected_Lock                 => RH_PO_HI_Protected,
       RE_Protected_Unlock               => RH_PO_HI_Protected,
       RE_Copy_Array                     => RH_PO_HI_Types,
-      RE_Send_Output                    => RH_Activity,
+      RE_Send_Output                    => RH_PO_HI_Transport, --  RH_Activity,
       RE_Get_Entity_From_Global_Port    => RH_PO_HI_Transport,
       RE_Gqueue_Store_In                => RH_PO_HI_Gqueue,
       RE_Gqueue_Store_Out               => RH_PO_HI_Gqueue,
@@ -346,6 +367,7 @@ package Ocarina.Backends.PO_HI_C.Runtime is
       RE_Gqueue_Get_Value               => RH_PO_HI_Gqueue,
       RE_Gqueue_Next_Value              => RH_PO_HI_Gqueue,
       RE_Gqueue_Wait_For_Incoming_Event => RH_PO_HI_Gqueue,
+      RE_Gqueue_Wait_For_Specific_Incoming_Events => RH_PO_HI_Gqueue,
       RE_Sporadic_Wait                  => RH_PO_HI_Task,
       RE_Sporadic_Wait_Release          => RH_PO_HI_Task,
       RE_Simulink_Find_Var              => RH_PO_HI_Simulink,
@@ -407,6 +429,7 @@ package Ocarina.Backends.PO_HI_C.Runtime is
       RE_Nb_Protocols                 => RH_Deployment,
       RE_Port_Type_Content            => RH_Deployment,
       RE_My_Node                      => RH_Deployment,
+      RE_My_Node_Name                 => RH_Deployment,
       RE_Nb_Ports                     => RH_Deployment,
       RE_Nb_Servers                   => RH_Deployment,
       RE_Nb_Protected                 => RH_Deployment,
@@ -469,7 +492,23 @@ package Ocarina.Backends.PO_HI_C.Runtime is
       RE_Node_Addr                    => RH_Deployment,
       RE_Entity_Table                 => RH_Deployment,
       RE_Port_Global_Model_Names      => RH_Deployment,
-      RE_Port_Global_To_Local         => RH_Deployment);
+      RE_Port_Global_To_Local         => RH_Deployment,
+
+      RE_Local_Port                   => RH_AADL,
+      RE_PORT_VARIABLE                => RH_AADL,
+      RE_REQUEST_PORT                 => RH_AADL,
+
+      RE_Initial                      => RH_Null,
+      RE_Initial_Complete             => RH_Null,
+      RE_Initial_Complete_Final       => RH_Null,
+      RE_Initial_Final                => RH_Null,
+      RE_Complete                     => RH_Null,
+      RE_Complete_Final               => RH_Null,
+      RE_Final                        => RH_Null,
+      RE_Execution                    => RH_Null,
+      RE_State_Kind_T                 => RH_Null,
+      RE_Ba_Automata_State_T          => RH_Null
+      );
    procedure Initialize;
    procedure Reset;
 

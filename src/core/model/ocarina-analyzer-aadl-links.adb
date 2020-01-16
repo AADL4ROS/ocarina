@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---       Copyright (C) 2009 Telecom ParisTech, 2010-2017 ESA & ISAE.        --
+--       Copyright (C) 2009 Telecom ParisTech, 2010-2019 ESA & ISAE.        --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2925,7 +2925,10 @@ package body Ocarina.Analyzer.AADL.Links is
                         --  whether the property refers to a colocated
                         --  subcomponent.
 
-                        if No (Pointed_Node) then
+                        if No (Pointed_Node)
+                          and then Present
+                            (Scope_Entity (Identifier (Container)))
+                        then
                            Pointed_Node :=
                              Find_Subcomponent
                                (Corresponding_Entity
@@ -3203,7 +3206,7 @@ package body Ocarina.Analyzer.AADL.Links is
 
             if Present (Property_Type) then
                declare
-                  Unit_Type : Node_Id;
+                  Unit_Type : Node_Id := No_Node;
 
                   V_Unit_Id : constant Node_Id := Unit_Identifier (Node);
                   Unit_Id               : Node_Id;
@@ -3214,10 +3217,11 @@ package body Ocarina.Analyzer.AADL.Links is
                      --  iterate over the property designator until we
                      --  find the corresponding entity to operate on.
 
-                     if Kind (Property_Type_Designator
-                                (Entity
-                                   (Property_Type_Designator
-                                      (Property_Type)))) = K_Record_Type
+                     if Present (V_Unit_Id) and then
+                       Kind (Property_Type_Designator
+                               (Entity
+                                  (Property_Type_Designator
+                                     (Property_Type)))) = K_Record_Type
                      then
                         List_Node := First_Node
                           (List_Items
@@ -3228,10 +3232,9 @@ package body Ocarina.Analyzer.AADL.Links is
 
                         while Present (List_Node) loop
                            --  A property type is a list of record_type element
-                           --  XXX should use case insensitive match ?
-                           if Ocarina.ME_AADL.AADL_Tree.Nodes.Display_Name
+                           if Ocarina.ME_AADL.AADL_Tree.Nodes.Name
                              (Identifier (List_Node)) =
-                             Display_Name (Identifier (Property_Container))
+                             Name (Identifier (Property_Container))
                            then
                               Unit_Type := Unwind_Units_Type (Root, List_Node);
                               exit;
@@ -3239,11 +3242,13 @@ package body Ocarina.Analyzer.AADL.Links is
                            List_Node := Next_Node (List_Node);
                         end loop;
                      else
-                        Unit_Type := Unwind_Units_Type
-                          (Root, Property_Type_Designator
+                        if Present (V_Unit_Id) then
+                           Unit_Type := Unwind_Units_Type
+                             (Root, Property_Type_Designator
                                 (Entity
                                    (Property_Type_Designator
                                       (Property_Type))));
+                        end if;
                      end if;
                   else
                      Unit_Type := Unwind_Units_Type (Root, Property_Type);

@@ -1,4 +1,4 @@
-tests/test_ocarina_help
+#tests/test_ocarina_help
 #tests/test_ocarina_config
 #tests/test_ocarina_gpr
 #tests/test_ao4aadl_lexer
@@ -325,5 +325,13 @@ tests/github/issue_56/test.aadl
 tests/github/issue_56/testFeatureGroup.aadl
 tests/github/issue_66/test.aadl
 tests/github/issue_87/test.aadl
+tests/github/issue_174/test.aadl
+tests/github/issue_177/test.aadl
+tests/github/issue_179/t.aadl
 
 tests/root_system/test.aadl
+
+tests/LNT/FCS/FCS.aadl
+tests/LNT/PC/producer_consumer.aadl
+tests/LNT/RADAR/radar.aadl
+tests/LNT/ROBOT/robot.aadl

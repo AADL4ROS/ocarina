@@ -222,7 +222,7 @@ public
       x : result_type;
     states
       s : initial complete final state;
-    transitions      
+    transitions
       s -[on dispatch]-> s {
          pre !(x);
          computation ( 60 ms ) ;
@@ -257,15 +257,15 @@ public
       s0 : initial complete final state;
       s1 : complete state;
       s2 : complete state;
-    transitions      
-      s0 -[on dispatch long]-> s1;      
+    transitions
+      s0 -[on dispatch long]-> s1;
       s1 -[on dispatch]-> s2 {
          long_computation !(local_result);
         local_result. status  := 1
-        } timeout  60 ms;      
+        } timeout  60 ms;
       s1 -[on dispatch timeout]-> s2 {
         local_result. status  := 0
-        };      
+        };
       s2 -[on dispatch short]-> s0 {
          send_result !(local_result, local_result)
         };
@@ -284,4 +284,5 @@ public
   end client_server.i;
 
 end BA_example3;
+
 

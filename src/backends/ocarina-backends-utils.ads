@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---    Copyright (C) 2005-2009 Telecom ParisTech, 2010-2018 ESA & ISAE.      --
+--    Copyright (C) 2005-2009 Telecom ParisTech, 2010-2019 ESA & ISAE.      --
 --                                                                          --
 -- Ocarina  is free software; you can redistribute it and/or modify under   --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,6 @@
 with Ocarina.Backends.Properties; use Ocarina.Backends.Properties;
 
 package Ocarina.Backends.Utils is
-
-   type Browsing_Kind is (By_Source, By_Destination, Default);
 
    -----------------
    -- AST visitor --
@@ -501,5 +499,21 @@ package Ocarina.Backends.Utils is
 
    function Get_Core_Id (D : Node_Id) return Unsigned_Long_Long;
    --  Return the id of the core D is bound to
+
+   function Is_Core (VP : Node_Id) return Boolean;
+   --  Return true iff VP is a virtual processor denoting a core,
+   --  i.e. it has the Processors::Core_Id property defined.
+
+   function Is_Partition (VP : Node_Id) return Boolean;
+   --  Return true iff VP is a virtual processor denoting a logical
+   --  partition, i.e. it has the Deployment::Deployment_Platform
+   --  property defined.
+
+   function Get_Number_Of_Cores (P : Node_Id) return Unsigned_Long_Long;
+   --  Return the number of cores attached to the processor P
+
+   function Has_Behavior_Specification (E : Node_Id) return Boolean;
+   --  Return True IFF the subprogram instance E contains a Behavior
+   --  Specification.
 
 end Ocarina.Backends.Utils;
